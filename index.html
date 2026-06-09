@@ -301,7 +301,11 @@ function render(){
   if(filter==='upcoming')filtered=filtered.filter(m=>!m.result);
   if(filter==='done')filtered=filtered.filter(m=>m.result);
   filtered=[...filtered].sort((a,b)=>{
-    const da=new Date(a.date+' 2026'), db=new Date(b.date+' 2026');
+    const parse=s=>{
+      const clean=s.replace('·','').replace(/\s+/g,' ').trim();
+      return new Date(clean+' 2026');
+    };
+    const da=parse(a.date), db=parse(b.date);
     return sortAsc?(da-db):(db-da);
   });
   document.getElementById('match-list').innerHTML=filtered.length
@@ -326,18 +330,25 @@ function toggleSort(){
 function toggleAddForm(){showAdd=!showAdd;render();}
 
 function addFormHtml(){
-  const topts=TEAMS.map(t=>`<option value="${t.name}">${t.flag} ${t.name}</option>`).join('');
+  const topts=TEAMS.map(t=>`<option value="${t.flag} ${t.name}">`).join('');
+  const tdl=`<datalist id="teams-dl">${topts}</datalist>`;
   return`<div class="add-form">
     <h3>➕ Add new match</h3>
     <div class="form-row">
       <div class="form-field"><label>Group / Round</label>
         <input type="text" id="af-group" placeholder="e.g. Group A, QF"></div>
-      <div class="form-field"><label>Date</label>
-        <input type="datetime-local" id="af-date"></div>
+      <div class="form-field"><label>Date & Time</label>
+        <div style="display:flex;gap:6px;align-items:center">
+          <input type="date" id="af-date" style="flex:1">
+          <select id="af-hour" style="width:80px;font-size:13px;padding:7px 6px;border:1px solid #ddd;border-radius:8px;background:#fff">
+            ${Array.from({length:24},(_,i)=>`<option value="${i}"${i===20?' selected':''}>${String(i).padStart(2,'0')}:00</option>`).join('')}
+          </select>
+        </div></div>
     </div>
     <div class="form-row">
-      <div class="form-field"><label>Team 1</label><select id="af-t1">${topts}</select></div>
-      <div class="form-field"><label>Team 2</label><select id="af-t2">${topts}</select></div>
+      ${tdl}
+      <div class="form-field"><label>Team 1</label><input id="af-t1" list="teams-dl" placeholder="Search team..." autocomplete="off" style="font-size:13px;padding:7px 9px;border:1px solid #ddd;border-radius:8px;width:100%"></div>
+      <div class="form-field"><label>Team 2</label><input id="af-t2" list="teams-dl" placeholder="Search team..." autocomplete="off" style="font-size:13px;padding:7px 9px;border:1px solid #ddd;border-radius:8px;width:100%"></div>
     </div>
     <div class="btn-row">
       <button class="btn btn-primary" onclick="addMatch()">Add match</button>
@@ -348,15 +359,17 @@ function addFormHtml(){
 async function addMatch(){
   const group=document.getElementById('af-group').value.trim()||'Group';
   const dateRaw=document.getElementById('af-date').value;
-  if(!dateRaw){showToast('Please pick a date and time');return;}
-  const d=new Date(dateRaw);
+  if(!dateRaw){showToast('Please pick a date');return;}
+  const hour=document.getElementById('af-hour').value;
+  const d=new Date(dateRaw+'T00:00:00');
   const date=d.toLocaleDateString('en-GB',{day:'numeric',month:'short'})
-    +' · '+d.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',hour12:false});
-  const t1n=document.getElementById('af-t1').value;
-  const t2n=document.getElementById('af-t2').value;
-  if(t1n===t2n){showToast('Pick two different teams!');return;}
-  const t1=TEAMS.find(t=>t.name===t1n);
-  const t2=TEAMS.find(t=>t.name===t2n);
+    +' · '+String(hour).padStart(2,'0')+':00';
+  const t1raw=document.getElementById('af-t1').value.trim();
+  const t2raw=document.getElementById('af-t2').value.trim();
+  const findTeam=raw=>TEAMS.find(t=>raw===t.flag+' '+t.name||raw.toLowerCase()===t.name.toLowerCase());
+  const t1=findTeam(t1raw), t2=findTeam(t2raw);
+  if(!t1||!t2){showToast('Please pick valid teams from the list');return;}
+  if(t1.name===t2.name){showToast('Pick two different teams!');return;}
   showToast('Saving...');
   try{
     const res=await apiFetch({
