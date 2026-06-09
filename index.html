@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>⚽ WC2026 Predictor</title>
+<title>FIFA World Cup 2026</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f5;color:#1a1a1a;font-size:14px}
@@ -81,8 +81,8 @@ h1{font-size:22px;font-weight:700;margin-bottom:4px}
 </head>
 <body>
 <div class="app">
-  <h1>⚽ WC 2026 Predictor</h1>
-  <p class="sub">Yuwen vs David</p>
+  <h1 style="text-align:center">⚽ FIFA World Cup 2026</h1>
+  <p class="sub" style="text-align:center">Yuwen vs David</p>
   <div class="scoreboard">
     <div class="sb-player"><div class="sb-name">Yuwen</div><div class="sb-pts" id="pts-yuwen">–</div><div class="sb-sub">points</div></div>
     <div class="sb-vs">vs</div>
@@ -93,6 +93,7 @@ h1{font-size:22px;font-weight:700;margin-bottom:4px}
     <button class="ftab on" onclick="setFilter('all',this)">All</button>
     <button class="ftab" onclick="setFilter('upcoming',this)">Upcoming</button>
     <button class="ftab" onclick="setFilter('done',this)">Finished</button>
+    <button class="ftab" id="sort-btn" onclick="toggleSort()" style="margin-left:auto">🕐 Soonest first</button>
   </div>
   <div id="match-list"><div class="loading">Loading matches...</div></div>
   <button class="btn-add" onclick="toggleAddForm()">＋ Add match</button>
@@ -129,7 +130,7 @@ const TEAMS = [
   {flag:'🏴󠁧󠁢󠁷󠁬󠁳󠁿',name:'Wales'},{flag:'🇿🇲',name:'Zambia'},{flag:'🇿🇼',name:'Zimbabwe'}
 ];
 
-let matches=[], filter='all', showAdd=false, editResult=null, editPred=null, predPlayer='both';
+let matches=[], filter='all', showAdd=false, editResult=null, editPred=null, predPlayer='both', sortAsc=true;
 
 async function apiFetch(params){
   const url=API+'?'+new URLSearchParams(params);
@@ -296,6 +297,10 @@ function render(){
   let filtered=matches;
   if(filter==='upcoming')filtered=filtered.filter(m=>!m.result);
   if(filter==='done')filtered=filtered.filter(m=>m.result);
+  filtered=[...filtered].sort((a,b)=>{
+    const da=new Date(a.date+' 2026'), db=new Date(b.date+' 2026');
+    return sortAsc?(da-db):(db-da);
+  });
   document.getElementById('match-list').innerHTML=filtered.length
     ?filtered.map(matchHtml).join('')
     :'<div class="loading">No matches yet. Add one below!</div>';
@@ -304,8 +309,15 @@ function render(){
 
 function setFilter(f,el){
   filter=f;
-  document.querySelectorAll('.ftab').forEach(b=>b.classList.remove('on'));
+  document.querySelectorAll('.ftab:not(#sort-btn)').forEach(b=>b.classList.remove('on'));
   el.classList.add('on');render();
+}
+
+function toggleSort(){
+  sortAsc=!sortAsc;
+  const btn=document.getElementById('sort-btn');
+  btn.textContent=sortAsc?'🕐 Soonest first':'🕐 Latest first';
+  render();
 }
 
 function toggleAddForm(){showAdd=!showAdd;render();}
@@ -370,17 +382,38 @@ async function saveResult(id){
 }
 
 async function savePreds(id){
+  const match=matches.find(m=>m.id===id);
   const get=player=>({
     winner:document.getElementById(`pw-${id}-${player}`).value,
     s1:parseInt(document.getElementById(`ps1-${id}-${player}`).value)||0,
     s2:parseInt(document.getElementById(`ps2-${id}-${player}`).value)||0
   });
+
+  const validate=(pred,pname)=>{
+    const{winner,s1,s2}=pred;
+    if(winner===match.t1.name&&s1<=s2)
+      return`${pname}: if ${match.t1.name} wins, their score must be higher!`;
+    if(winner===match.t2.name&&s2<=s1)
+      return`${pname}: if ${match.t2.name} wins, their score must be higher!`;
+    if(winner==='Draw'&&s1!==s2)
+      return`${pname}: draw means both scores must be equal!`;
+    return null;
+  };
+
+  const toSave=[];
+  if(predPlayer!=='david') toSave.push({player:'yuwen',pred:get('yuwen')});
+  if(predPlayer!=='yuwen') toSave.push({player:'david',pred:get('david')});
+
+  for(const{player,pred}of toSave){
+    const err=validate(pred,player==='yuwen'?'Yuwen':'David');
+    if(err){showToast('❌ '+err);return;}
+  }
+
   showToast('Saving...');
   try{
-    const saves=[];
-    if(predPlayer!=='david'){const y=get('yuwen');saves.push(apiFetch({action:'updatePrediction',id,player:'yuwen',winner:y.winner,s1:y.s1,s2:y.s2}));}
-    if(predPlayer!=='yuwen'){const dv=get('david');saves.push(apiFetch({action:'updatePrediction',id,player:'david',winner:dv.winner,s1:dv.s1,s2:dv.s2}));}
-    await Promise.all(saves);
+    await Promise.all(toSave.map(({player,pred})=>
+      apiFetch({action:'updatePrediction',id,player,winner:pred.winner,s1:pred.s1,s2:pred.s2})
+    ));
     editPred=null;showToast('✅ Predictions saved!');await loadMatches();
   }catch(e){showToast('❌ Network error');}
 }
