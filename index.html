@@ -350,8 +350,8 @@ async function addMatch(){
   const dateRaw=document.getElementById('af-date').value;
   if(!dateRaw){showToast('Please pick a date and time');return;}
   const d=new Date(dateRaw);
-  const date=d.toLocaleDateString('en-US',{month:'short',day:'numeric'})
-    +' '+d.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',hour12:false});
+  const date=d.toLocaleDateString('en-GB',{day:'numeric',month:'short'})
+    +' · '+d.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',hour12:false});
   const t1n=document.getElementById('af-t1').value;
   const t2n=document.getElementById('af-t2').value;
   if(t1n===t2n){showToast('Pick two different teams!');return;}
