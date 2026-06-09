@@ -18,8 +18,8 @@ h1{font-size:22px;font-weight:700;margin-bottom:4px}
 .sb-sub{font-size:11px;color:#bbb;margin-top:2px}
 .sb-vs{display:flex;align-items:center;font-size:12px;color:#bbb}
 .scoring-note{font-size:12px;color:#666;background:#f9f9f9;border-radius:8px;padding:8px 12px;margin-bottom:14px;border:1px solid #eee}
-.filter-row{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
-.ftab{padding:5px 14px;border-radius:20px;border:1px solid #ddd;font-size:13px;cursor:pointer;background:transparent;color:#666}
+.filter-row{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;align-items:center}
+.ftab{padding:5px 12px;border-radius:20px;border:1px solid #ddd;font-size:13px;cursor:pointer;background:transparent;color:#666}
 .ftab.on{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
 .match{background:#fff;border:1px solid #e8e8e8;border-radius:14px;padding:14px 16px;margin-bottom:10px}
 .match-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
@@ -27,25 +27,28 @@ h1{font-size:22px;font-weight:700;margin-bottom:4px}
 .badge{font-size:11px;padding:2px 10px;border-radius:20px;font-weight:500}
 .badge-done{background:#dcfce7;color:#16a34a}
 .badge-upcoming{background:#fef9c3;color:#a16207}
-.teams-row{display:grid;grid-template-columns:1fr 56px 1fr;align-items:center;gap:4px;margin-bottom:12px}
+.teams-row{display:grid;grid-template-columns:1fr 48px 1fr;align-items:center;gap:4px;margin-bottom:12px}
 .team-cell{display:flex;flex-direction:column;align-items:center;gap:3px}
-.flag{font-size:22px}
-.tname{font-size:13px;font-weight:600;text-align:center}
+.flag{font-size:20px}
+.tname{font-size:13px;font-weight:600;text-align:center;word-break:break-word}
 .score-box{text-align:center}
 .score-final{font-size:20px;font-weight:700}
-.score-pending{font-size:13px;color:#bbb}
+.score-pending{font-size:12px;color:#bbb}
 .preds{display:grid;grid-template-columns:1fr 1fr;gap:8px;border-top:1px solid #f0f0f0;padding-top:10px}
-.pred-card{background:#f9f9f9;border-radius:8px;padding:8px 10px}
+.pred-card{background:#f9f9f9;border-radius:8px;padding:8px 10px;min-width:0}
 .pred-label{font-size:11px;color:#888;margin-bottom:4px;font-weight:600}
-.pred-val{font-size:13px;font-weight:600;color:#1a1a1a}
+.pred-val{font-size:13px;font-weight:600;color:#1a1a1a;word-break:break-word}
 .pred-val.ok{color:#16a34a}
 .pred-val.no{color:#dc2626}
 .pts-tag{display:inline-block;margin-top:3px;font-size:11px;padding:1px 8px;border-radius:20px;background:#dbeafe;color:#1d4ed8}
 .no-pred{font-size:13px;color:#bbb;font-style:italic}
-.action-row{border-top:1px solid #f0f0f0;padding-top:10px;margin-top:2px;display:flex;gap:6px;align-items:center;flex-wrap:nowrap}
-.btn-enter{padding:5px 12px;border-radius:8px;border:1px solid #f97316;background:#f97316;color:#fff;font-size:13px;cursor:pointer;font-weight:500;white-space:nowrap}
+.action-row{border-top:1px solid #f0f0f0;padding-top:10px;margin-top:2px}
+.action-row-top{display:flex;gap:6px;margin-bottom:6px}
+.action-row-top .btn-enter,.action-row-top .btn{flex:1;text-align:center}
+.action-row-bottom{display:flex;justify-content:flex-end}
+.btn-enter{padding:7px 12px;border-radius:8px;border:1px solid #f97316;background:#f97316;color:#fff;font-size:13px;cursor:pointer;font-weight:500}
 .btn-enter:hover{background:#ea6c0a}
-.btn{padding:5px 10px;border-radius:8px;border:1px solid #ddd;background:transparent;color:#1a1a1a;font-size:13px;cursor:pointer;font-weight:500;white-space:nowrap}
+.btn{padding:7px 10px;border-radius:8px;border:1px solid #ddd;background:transparent;color:#1a1a1a;font-size:13px;cursor:pointer;font-weight:500}
 .btn:hover{background:#f5f5f5}
 .btn-cancel{color:#888;border-color:#eee}
 .btn-danger{color:#dc2626;border-color:#fecaca}
@@ -57,7 +60,7 @@ h1{font-size:22px;font-weight:700;margin-bottom:4px}
 .small-input{width:44px;text-align:center;padding:5px;font-size:15px;border:1px solid #ddd;border-radius:8px;background:#fff}
 .dash{color:#888;font-weight:600}
 .pred-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
-.pred-form-card{background:#f9f9f9;border-radius:8px;padding:8px 10px}
+.pred-form-card{background:#f9f9f9;border-radius:8px;padding:8px 10px;min-width:0}
 .pred-form-label{font-size:11px;color:#888;margin-bottom:6px;font-weight:600}
 .pred-sel{font-size:12px;padding:4px 6px;border:1px solid #ddd;border-radius:6px;background:#fff;width:100%;margin-bottom:6px}
 .score-inputs{display:flex;align-items:center;gap:5px}
@@ -68,17 +71,26 @@ h1{font-size:22px;font-weight:700;margin-bottom:4px}
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
 .form-field{display:flex;flex-direction:column;gap:4px}
 .form-field label{font-size:12px;color:#666;font-weight:500}
-.form-field input,.form-field select{font-size:13px;padding:7px 9px;border:1px solid #ddd;border-radius:8px;background:#fff;color:#1a1a1a}
-.form-field input[type="date"],.form-field input[type="datetime-local"]{cursor:pointer}
+.form-field input,.form-field select{font-size:13px;padding:7px 9px;border:1px solid #ddd;border-radius:8px;background:#fff;color:#1a1a1a;width:100%}
+.form-field input[type="date"]{cursor:pointer}
 .btn-row{display:flex;gap:8px;margin-top:10px}
 .btn-primary{padding:7px 18px;border-radius:8px;border:none;background:#1a1a1a;color:#fff;font-size:13px;cursor:pointer;font-weight:500}
 .btn-primary:hover{background:#333}
 .loading{text-align:center;padding:40px;color:#888;font-size:14px}
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1a1a1a;color:#fff;padding:10px 20px;border-radius:20px;font-size:13px;z-index:999;opacity:0;transition:opacity 0.3s;pointer-events:none;white-space:nowrap}
 .toast.show{opacity:1}
-.pred-tab-row{display:flex;gap:4px;margin-bottom:10px}
+.pred-tab-row{display:flex;gap:4px;margin-bottom:10px;flex-wrap:wrap}
 .pred-tab{padding:4px 12px;border-radius:20px;border:1px solid #ddd;font-size:12px;cursor:pointer;background:transparent;color:#666}
 .pred-tab.on{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
+@media(max-width:400px){
+  .ftab{font-size:12px;padding:4px 10px}
+  .tname{font-size:12px}
+  .score-final{font-size:18px}
+  .form-row{grid-template-columns:1fr}
+  .pred-form-grid{grid-template-columns:1fr}
+  .preds{grid-template-columns:1fr}
+  .sb-pts{font-size:26px}
+}
 </style>
 </head>
 <body>
@@ -281,9 +293,13 @@ function matchHtml(match){
     </div></div>`:'';
 
   const actionRow=!isEditR&&!isEditP?`<div class="action-row">
-    <button class="btn-enter" onclick="editResult='${match.id}';editPred=null;render()">${done?'✏️ Edit result':'✏️ Enter result'}</button>
-    <button class="btn" onclick="editPred='${match.id}';editResult=null;predPlayer='both';render()">📝 Edit predictions</button>
-    <button class="btn btn-danger" style="margin-left:auto" onclick="deleteMatch('${match.id}')">🗑 Delete</button>
+    <div class="action-row-top">
+      <button class="btn-enter" onclick="editResult='${match.id}';editPred=null;render()">${done?'✏️ Edit result':'✏️ Enter result'}</button>
+      <button class="btn" onclick="editPred='${match.id}';editResult=null;predPlayer='both';render()">📝 Edit predictions</button>
+    </div>
+    <div class="action-row-bottom">
+      <button class="btn btn-danger" onclick="deleteMatch('${match.id}')">🗑 Delete</button>
+    </div>
   </div>`:'';
 
   return`<div class="match">
@@ -304,8 +320,11 @@ function render(){
   if(filter==='done')filtered=filtered.filter(m=>m.result);
   filtered=[...filtered].sort((a,b)=>{
     const parse=s=>{
-      const clean=s.replace('·','').replace(/\s+/g,' ').trim();
-      return new Date(clean+' 2026');
+      try{
+        const parts=s.replace('·','').trim().split(/\s+/);
+        const day=parts[0], mon=parts[1], time=(parts[2]||'00:00').split(':');
+        return new Date(`${mon} ${day} 2026 ${time[0]}:${time[1]}`);
+      }catch(e){return new Date(0);}
     };
     const da=parse(a.date), db=parse(b.date);
     return sortAsc?(da-db):(db-da);
