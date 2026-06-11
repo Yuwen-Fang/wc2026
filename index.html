@@ -235,6 +235,15 @@ let pendingLogin=null;
 
 // ── Auth ──────────────────────────────────────────
 function requestLogin(who){
+  if(who===currentView)return;
+  // reset to public first so signed-in bar clears immediately
+  currentView='public';
+  document.getElementById('btn-public').className='view-btn active';
+  document.getElementById('btn-yuwen').className='view-btn';
+  document.getElementById('btn-david').className='view-btn';
+  document.getElementById('signed-in-bar').style.display='none';
+  document.getElementById('add-btn').style.display='flex';
+  // now open modal
   pendingLogin=who;
   document.getElementById('modal-title').textContent=`Sign in as ${who==='yuwen'?'Yuwen':'David'}`;
   document.getElementById('modal-desc').textContent='Enter your password to view your predictions.';
@@ -385,10 +394,10 @@ function predHtml(pred, match, pts, isOpponent){
       :'<div class="pred-empty">⬜ Not yet</div>';
   }
 
-  // PERSONAL VIEW: hide opponent before kickoff
-  if(isOpponent && !kicked && !done){
+  // PERSONAL VIEW: hide opponent until result is entered
+  if(isOpponent && !done){
     return pred
-      ?'<div class="pred-hidden">🔒 Revealed at kickoff</div>'
+      ?'<div class="pred-hidden">🔒 Revealed after match</div>'
       :'<div class="pred-empty">⬜ Not yet</div>';
   }
 
