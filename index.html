@@ -174,7 +174,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   </div>
 
   <div id="match-list"><div class="loading">Loading matches...</div></div>
-  <button class="btn-add" id="add-btn" style="display:none" onclick="toggleAddForm()">＋ Add match</button>
+  <button class="btn-add" id="add-btn" onclick="toggleAddForm()">＋ Add match</button>
   <div id="add-form-area"></div>
 </div>
 
@@ -275,11 +275,11 @@ function switchView(view){
   const bar=document.getElementById('signed-in-bar');
   if(view==='public'){
     bar.style.display='none';
-    document.getElementById('add-btn').style.display='none';
+    document.getElementById('add-btn').style.display='flex';
   } else {
     bar.style.display='flex';
     document.getElementById('signed-in-name').textContent=view==='yuwen'?'Yuwen':'David';
-    document.getElementById('add-btn').style.display='flex';
+    document.getElementById('add-btn').style.display='none';
   }
   editResult=null; editPred=null; showAdd=false;
   render();
@@ -482,16 +482,22 @@ function matchHtml(match){
       <button class="btn btn-cancel" onclick="editPred=null;render()">Cancel</button>
     </div></div>`:'';
 
-  // Only show edit buttons when signed in
-  const actionRow=isPersonal&&!isEditR&&!isEditP?`<div class="action-row">
-    <div class="action-row-top">
-      <button class="btn-enter" onclick="editResult='${match.id}';editPred=null;render()">${done?'✏️ Edit result':'✏️ Enter result'}</button>
-      <button class="btn" onclick="editPred='${match.id}';editResult=null;predPlayer='both';render()">📝 Edit predictions</button>
-    </div>
-    <div class="action-row-bottom">
-      <button class="btn btn-danger" onclick="deleteMatch('${match.id}')">🗑 Delete</button>
-    </div>
-  </div>`:'';
+  // Public: only Enter result; Personal: only Edit predictions + Delete
+  const actionRow=!isEditR&&!isEditP?(
+    currentView==='public'?`<div class="action-row">
+      <div class="action-row-top">
+        <button class="btn-enter" onclick="editResult='${match.id}';editPred=null;render()">${done?'✏️ Edit result':'✏️ Enter result'}</button>
+      </div>
+    </div>`
+    :`<div class="action-row">
+      <div class="action-row-top">
+        <button class="btn-enter" style="background:#7c3aed;border-color:#7c3aed" onclick="editPred='${match.id}';editResult=null;predPlayer=currentView;render()">📝 Edit my prediction</button>
+      </div>
+      <div class="action-row-bottom">
+        <button class="btn btn-danger" onclick="deleteMatch('${match.id}')">🗑 Delete</button>
+      </div>
+    </div>`
+  ):'';
 
   return`<div class="match">
     <div class="match-top">
