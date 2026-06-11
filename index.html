@@ -42,6 +42,7 @@ h1{font-size:22px;font-weight:700;margin-bottom:4px}
 .pred-val.no{color:#dc2626}
 .pts-tag{display:inline-block;margin-top:3px;font-size:11px;padding:1px 8px;border-radius:20px;background:#dbeafe;color:#1d4ed8}
 .no-pred{font-size:13px;color:#bbb;font-style:italic}
+.pred-hidden{font-size:13px;color:#bbb;display:flex;align-items:center;gap:4px}
 .action-row{border-top:1px solid #f0f0f0;padding-top:10px;margin-top:2px}
 .action-row-top{display:flex;gap:6px;margin-bottom:6px}
 .action-row-top .btn-enter,.action-row-top .btn{flex:1;text-align:center}
@@ -97,6 +98,11 @@ h1{font-size:22px;font-weight:700;margin-bottom:4px}
 <div class="app">
   <h1 style="text-align:center">⚽ FIFA World Cup 2026</h1>
   <p class="sub" style="text-align:center">Yuwen vs David</p>
+  <div style="display:flex;justify-content:center;gap:8px;margin-bottom:20px;align-items:center">
+    <span style="font-size:13px;color:#888">I am:</span>
+    <button class="pred-tab on" id="iam-yuwen" onclick="setViewAs('yuwen')">Yuwen</button>
+    <button class="pred-tab" id="iam-david" onclick="setViewAs('david')">David</button>
+  </div>
   <div class="scoreboard">
     <div class="sb-player"><div class="sb-name">Yuwen</div><div class="sb-pts" id="pts-yuwen">–</div><div class="sb-sub">points</div></div>
     <div class="sb-vs">vs</div>
@@ -147,7 +153,7 @@ const TEAMS = [
   {flag:'🇨🇩',name:'Congo DR'},{flag:'🇺🇿',name:'Uzbekistan'}
 ];
 
-let matches=[], filter='all', showAdd=false, editResult=null, editPred=null, predPlayer='both', sortAsc=true;
+let matches=[], filter='all', showAdd=false, editResult=null, editPred=null, predPlayer='both', sortAsc=true, viewAs='yuwen';
 
 async function apiFetch(params){
   const url=API+'?'+new URLSearchParams(params);
@@ -211,9 +217,27 @@ function renderScoreboard(){
   document.getElementById('pts-david').className='sb-pts'+(david>yuwen?' lead':'');
 }
 
-function predHtml(pred,match,pts){
-  if(!pred)return'<div class="no-pred">No prediction yet</div>';
+function parseMatchDate(dateStr){
+  try{
+    const parts=dateStr.replace('·','').trim().split(/\s+/);
+    const day=parts[0],mon=parts[1],time=(parts[2]||'00:00').split(':');
+    return new Date(`${mon} ${day} 2026 ${time[0]}:${time[1]}:00 GMT+0100`);
+  }catch(e){return new Date(0);}
+}
+
+function isKickoffPassed(match){
+  return new Date()>=parseMatchDate(match.date);
+}
+
+function predHtml(pred,match,pts,isOpponent){
+  const kicked=isKickoffPassed(match);
   const done=match.result!==null;
+  if(isOpponent&&!kicked&&!done){
+    return pred
+      ?'<div class="pred-hidden">🔒 Revealed at kickoff</div>'
+      :'<div class="no-pred">No prediction yet</div>';
+  }
+  if(!pred)return'<div class="no-pred">No prediction yet</div>';
   let cls='',tag='';
   if(done&&pts!==null){
     cls=pts>0?'ok':'no';
@@ -258,8 +282,8 @@ function matchHtml(match){
   </div>`;
 
   const predsDisplay=`<div class="preds">
-    <div class="pred-card"><div class="pred-label">Yuwen</div>${predHtml(match.yuwen,match,pts.yuwen)}</div>
-    <div class="pred-card"><div class="pred-label">David</div>${predHtml(match.david,match,pts.david)}</div>
+    <div class="pred-card"><div class="pred-label">Yuwen</div>${predHtml(match.yuwen,match,pts.yuwen,viewAs==='david')}</div>
+    <div class="pred-card"><div class="pred-label">David</div>${predHtml(match.david,match,pts.david,viewAs==='yuwen')}</div>
   </div>`;
 
   const resultEdit=isEditR?`<div class="edit-section">
@@ -333,6 +357,13 @@ function render(){
     ?filtered.map(matchHtml).join('')
     :'<div class="loading">No matches yet. Add one below!</div>';
   document.getElementById('add-form-area').innerHTML=showAdd?addFormHtml():'';
+}
+
+function setViewAs(who){
+  viewAs=who;
+  document.getElementById('iam-yuwen').className='pred-tab'+(who==='yuwen'?' on':'');
+  document.getElementById('iam-david').className='pred-tab'+(who==='david'?' on':'');
+  render();
 }
 
 function setFilter(f,el){
