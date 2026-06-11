@@ -16,10 +16,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 
 /* View selector */
 .view-selector{display:flex;gap:8px;justify-content:center;margin-bottom:20px}
-.view-btn{padding:8px 20px;border-radius:20px;border:1px solid #ddd;font-size:13px;cursor:pointer;background:#fff;color:#666;font-weight:500}
-.view-btn.active{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
-.view-btn.yuwen-active{background:#7c3aed;color:#fff;border-color:#7c3aed}
-.view-btn.david-active{background:#0369a1;color:#fff;border-color:#0369a1}
+.view-btn{padding:8px 20px;border-radius:20px;border:2px solid #ddd;font-size:13px;cursor:pointer;background:#fff;color:#666;font-weight:500;transition:all 0.2s}
+.view-btn.active{background:#1a1a1a;color:#fff;border-color:#1a1a1a;font-weight:700}
+.view-btn.yuwen-active{background:#7c3aed;color:#fff;border-color:#7c3aed;font-weight:700}
+.view-btn.david-active{background:#0369a1;color:#fff;border-color:#0369a1;font-weight:700}
 
 /* Password modal */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:100;padding:16px}
@@ -428,10 +428,6 @@ function matchHtml(match){
   const done=match.result!==null;
   const isEditR=editResult===match.id;
   const isEditP=editPred===match.id;
-  const isPersonal=currentView!=='public';
-
-  // For personal view: which is "me" and which is "opponent"
-  const meIsYuwen=currentView==='yuwen';
 
   const teamsRow=`<div class="teams-row">
     <div class="team-cell"><span class="flag">${match.t1.flag}</span><span class="tname">${match.t1.name}</span></div>
@@ -441,14 +437,18 @@ function matchHtml(match){
     <div class="team-cell"><span class="flag">${match.t2.flag}</span><span class="tname">${match.t2.name}</span></div>
   </div>`;
 
+  // isOpponent: true = hide before kickoff
+  const yuwenIsOpponent = currentView==='david';
+  const davidIsOpponent = currentView==='yuwen';
+
   const predsDisplay=`<div class="preds">
     <div class="pred-card">
       <div class="pred-label">Yuwen</div>
-      ${predHtml(match.yuwen,match,pts.yuwen, meIsYuwen?false:true)}
+      ${predHtml(match.yuwen,match,pts.yuwen,yuwenIsOpponent)}
     </div>
     <div class="pred-card">
       <div class="pred-label">David</div>
-      ${predHtml(match.david,match,pts.david, meIsYuwen?true:false)}
+      ${predHtml(match.david,match,pts.david,davidIsOpponent)}
     </div>
   </div>`;
 
@@ -466,38 +466,37 @@ function matchHtml(match){
       <button class="btn btn-cancel" onclick="editResult=null;render()">Cancel</button>
     </div></div>`:'';
 
+  // predEdit: only show current user's own form
   const predEdit=isEditP?`<div class="edit-section">
-    <div class="edit-label">Edit predictions</div>
-    <div class="pred-tab-row">
-      <button class="pred-tab ${predPlayer==='both'?'on':''}" onclick="predPlayer='both';render()">Both</button>
-      <button class="pred-tab ${predPlayer==='yuwen'?'on':''}" onclick="predPlayer='yuwen';render()">Yuwen only</button>
-      <button class="pred-tab ${predPlayer==='david'?'on':''}" onclick="predPlayer='david';render()">David only</button>
-    </div>
-    <div class="pred-form-grid">
-      ${predPlayer!=='david'?predFormCard(match,'yuwen'):''}
-      ${predPlayer!=='yuwen'?predFormCard(match,'david'):''}
+    <div class="edit-label">My prediction</div>
+    <div class="pred-form-grid" style="grid-template-columns:1fr">
+      ${predFormCard(match, currentView)}
     </div>
     <div style="display:flex;gap:6px">
-      <button class="btn btn-primary" onclick="savePreds('${match.id}')">Save predictions</button>
+      <button class="btn btn-primary" onclick="savePreds('${match.id}')">Save</button>
       <button class="btn btn-cancel" onclick="editPred=null;render()">Cancel</button>
     </div></div>`:'';
 
-  // Public: only Enter result; Personal: only Edit predictions + Delete
-  const actionRow=!isEditR&&!isEditP?(
-    currentView==='public'?`<div class="action-row">
-      <div class="action-row-top">
-        <button class="btn-enter" onclick="editResult='${match.id}';editPred=null;render()">${done?'✏️ Edit result':'✏️ Enter result'}</button>
-      </div>
-    </div>`
-    :`<div class="action-row">
-      <div class="action-row-top">
-        <button class="btn-enter" style="background:#7c3aed;border-color:#7c3aed" onclick="editPred='${match.id}';editResult=null;predPlayer=currentView;render()">📝 Edit my prediction</button>
-      </div>
-      <div class="action-row-bottom">
-        <button class="btn btn-danger" onclick="deleteMatch('${match.id}')">🗑 Delete</button>
-      </div>
-    </div>`
-  ):'';
+  // Action rows per view
+  let actionRow='';
+  if(!isEditR&&!isEditP){
+    if(currentView==='public'){
+      actionRow=`<div class="action-row">
+        <div class="action-row-top">
+          <button class="btn-enter" onclick="editResult='${match.id}';editPred=null;render()">${done?'✏️ Edit result':'✏️ Enter result'}</button>
+        </div>
+        <div class="action-row-bottom">
+          <button class="btn btn-danger" onclick="deleteMatch('${match.id}')">🗑 Delete</button>
+        </div>
+      </div>`;
+    } else {
+      actionRow=`<div class="action-row">
+        <div class="action-row-top">
+          <button class="btn-enter" style="background:#7c3aed;border-color:#7c3aed;width:100%" onclick="editPred='${match.id}';editResult=null;predPlayer=currentView;render()">📝 Edit my prediction</button>
+        </div>
+      </div>`;
+    }
+  }
 
   return`<div class="match">
     <div class="match-top">
@@ -611,31 +610,21 @@ async function saveResult(id){
 
 async function savePreds(id){
   const match=matches.find(m=>m.id===id);
-  const get=player=>({
+  const player=currentView; // 'yuwen' or 'david'
+  const pred={
     winner:document.getElementById(`pw-${id}-${player}`).value,
     s1:parseInt(document.getElementById(`ps1-${id}-${player}`).value)||0,
     s2:parseInt(document.getElementById(`ps2-${id}-${player}`).value)||0
-  });
-  const validate=(pred,pname)=>{
-    const{winner,s1,s2}=pred;
-    if(winner===match.t1.name&&s1<=s2)return`${pname}: if ${match.t1.name} wins, score must be higher!`;
-    if(winner===match.t2.name&&s2<=s1)return`${pname}: if ${match.t2.name} wins, score must be higher!`;
-    if(winner==='Draw'&&s1!==s2)return`${pname}: draw means equal scores!`;
-    return null;
   };
-  const toSave=[];
-  if(predPlayer!=='david')toSave.push({player:'yuwen',pred:get('yuwen')});
-  if(predPlayer!=='yuwen')toSave.push({player:'david',pred:get('david')});
-  for(const{player,pred}of toSave){
-    const err=validate(pred,player==='yuwen'?'Yuwen':'David');
-    if(err){showToast('❌ '+err);return;}
-  }
+  const pname=player==='yuwen'?'Yuwen':'David';
+  const{winner,s1,s2}=pred;
+  if(winner===match.t1.name&&s1<=s2){showToast(`❌ If ${match.t1.name} wins, score must be higher!`);return;}
+  if(winner===match.t2.name&&s2<=s1){showToast(`❌ If ${match.t2.name} wins, score must be higher!`);return;}
+  if(winner==='Draw'&&s1!==s2){showToast('❌ Draw means equal scores!');return;}
   showToast('Saving...');
   try{
-    await Promise.all(toSave.map(({player,pred})=>
-      apiFetch({action:'updatePrediction',id,player,winner:pred.winner,s1:pred.s1,s2:pred.s2})
-    ));
-    editPred=null;showToast('✅ Predictions saved!');await loadMatches();
+    await apiFetch({action:'updatePrediction',id,player,winner,s1,s2});
+    editPred=null;showToast('✅ Prediction saved!');await loadMatches();
   }catch(e){showToast('❌ Network error');}
 }
 
